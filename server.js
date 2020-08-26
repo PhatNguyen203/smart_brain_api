@@ -54,6 +54,31 @@ app.post("/register", (req, res) => {
   res.json(db.users[db.users.length - 1]);
 });
 
+app.get("/profile/:id", (req, res) => {
+  const { id } = req.params;
+  let isFound = false;
+  db.users.map((user) => {
+    if (user.id === id) {
+      isFound = true;
+      return res.json(user);
+    }
+  });
+  if (!isFound) return res.status(404).json("not found");
+});
+
+app.post("/image", (req, res) => {
+  const { id } = req.body;
+  let isFound = false;
+  db.users.map((user) => {
+    if (user.id === id) {
+      isFound = true;
+      user.entries++;
+      return res.json(user.entries);
+    }
+  });
+  if (!isFound) return res.status(404).json("not found");
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
