@@ -1,11 +1,12 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-const { urlencoded } = require("body-parser");
+const cors = require("conrs");
 
 const app = express();
 dotenv.config({ path: "./config/config.env" });
 app.use(bodyParser.json());
+app.use(cors());
 
 const db = {
   users: [
