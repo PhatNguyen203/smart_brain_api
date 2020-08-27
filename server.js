@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-const cors = require("conrs");
+const cors = require("cors");
 
 const app = express();
 dotenv.config({ path: "./config/config.env" });
@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
   if (email === db.users[0].email && password === db.users[0].password) {
-    res.json("success");
+    res.json(db.users[0]);
   } else {
     res.status(400).json("error logging in");
   }
