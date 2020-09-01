@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const knex = require("knex");
+const e = require("express");
 
 const app = express();
 dotenv.config({ path: "./config/config.env" });
@@ -60,14 +61,16 @@ app.post("/register", (req, res) => {
 
 app.get("/profile/:id", (req, res) => {
   const { id } = req.params;
-  let isFound = false;
-  db.users.map((user) => {
-    if (user.id === id) {
-      isFound = true;
-      return res.json(user);
-    }
-  });
-  if (!isFound) return res.status(404).json("not found");
+  database("select")
+    .from("users")
+    .where({ id })
+    .then((data) => {
+      if (data.length) {
+        res.json(data);
+      } else {
+        res.status(404).send({ error: "Not Found" });
+      }
+    });
 });
 
 app.put("/image", (req, res) => {
