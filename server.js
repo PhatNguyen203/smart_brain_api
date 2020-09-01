@@ -2,11 +2,23 @@ const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const knex = require("knex");
 
 const app = express();
 dotenv.config({ path: "./config/config.env" });
 app.use(bodyParser.json());
 app.use(cors());
+
+//connect to database
+const database = knex({
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "postgres",
+    password: "18091993",
+    database: "smart_brain",
+  },
+});
 
 const db = {
   users: [
@@ -35,24 +47,15 @@ app.get("/", (req, res) => {
 
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
-  if (email === db.users[0].email && password === db.users[0].password) {
-    res.json(db.users[0]);
-  } else {
-    res.status(400).json("error logging in");
-  }
 });
 
 app.post("/register", (req, res) => {
-  const { email, name, password } = req.body;
-  db.users.push({
-    id: "3",
-    name: name,
-    email: email,
-    password: password,
-    entries: 0,
-    joined: new Date(),
-  });
-  res.json(db.users[db.users.length - 1]);
+  const { email, name, joined, password } = req.body;
+  database("users")
+    .returning("*")
+    .insert({ email: email, name: name, joined: new Date() })
+    .then((response) => res.json(response))
+    .catch((error) => res.status(400).json(error.detail));
 });
 
 app.get("/profile/:id", (req, res) => {
