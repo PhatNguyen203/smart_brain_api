@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const knex = require("knex");
-const e = require("express");
+const bcrypt = require("bcrypt-nodejs");
 
 const app = express();
 dotenv.config({ path: "./config/config.env" });
@@ -75,15 +75,12 @@ app.get("/profile/:id", (req, res) => {
 
 app.put("/image", (req, res) => {
   const { id } = req.body;
-  let isFound = false;
-  db.users.map((user) => {
-    if (user.id === id) {
-      isFound = true;
-      user.entries++;
-      return res.json(user.entries);
-    }
-  });
-  if (!isFound) return res.status(404).json("not found");
+  database("user")
+    .where("id", "=", id)
+    .increment("entries", 1)
+    .returning("entries")
+    .then((data) => res.json(data[0]))
+    .catch((err) => res.status(400).json("unable to get entries"));
 });
 
 const PORT = process.env.PORT || 5000;
