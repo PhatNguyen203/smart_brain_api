@@ -23,6 +23,23 @@ const database = knex({
 
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
+  const hash = bcrypt.hashSync(password);
+  database
+    .select("email", "has")
+    .from("login")
+    .where("email", "=", email)
+    .then((data) => {
+      const isValid = bcrypt.compareSync(password, data[0].has);
+      if (isValid) {
+        return database("users")
+          .select("*")
+          .where("email", "=", email)
+          .then((user) => res.json(user[0]));
+      } else {
+        res.status(404).json("Wrong username or password");
+      }
+    })
+    .catch((error) => res.status(400).json(error.detail));
 });
 
 app.post("/register", (req, res) => {
