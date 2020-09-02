@@ -21,41 +21,27 @@ const database = knex({
   },
 });
 
-const db = {
-  users: [
-    {
-      id: "1",
-      name: "john",
-      email: "john@gmail.com",
-      password: "12345",
-      entries: 0,
-      joined: new Date(),
-    },
-    {
-      id: "2",
-      name: "sally",
-      email: "sally@gmail.com",
-      password: "113",
-      entries: 0,
-      joined: new Date(),
-    },
-  ],
-};
-
-app.get("/", (req, res) => {
-  res.json(db.users);
-});
-
 app.post("/signin", (req, res) => {
   const { email, password } = req.body;
 });
 
 app.post("/register", (req, res) => {
-  const { email, name, joined, password } = req.body;
-  database("users")
-    .returning("*")
-    .insert({ email: email, name: name, joined: new Date() })
-    .then((response) => res.json(response))
+  const { email, name, password } = req.body;
+  const hash = bcrypt.hashSync(password);
+  database
+    .transaction((trx) => {
+      trx
+        .insert({ email: email, has: hash })
+        .into("login")
+        .then((loginEmail) => {
+          return trx("users")
+            .returning("*")
+            .insert({ email: email, name: name, joined: new Date() })
+            .then((user) => res.json(user[0]));
+        })
+        .then(trx.commit)
+        .catch(trx.rollback);
+    })
     .catch((error) => res.status(400).json(error.detail));
 });
 
